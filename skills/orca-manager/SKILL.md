@@ -20,11 +20,13 @@ Look for the repo's own worktree command: `ls .claude/commands .claude/skills .a
 | Found | Do |
 |---|---|
 | Yes (hrm-service: `/git-worktree`) | Follow it with the branch you chose (`--branch feat/...`). The approved plan is consent for its confirmation questions; answer them yourself. |
-| No | `git fetch origin main && git worktree add --no-track -b <branch> ../<repo>-<slug> origin/main` |
+| No | `git fetch origin main && git worktree add --no-track -b <branch> "$(dirname "$(git rev-parse --show-toplevel)")/<repo>-<slug>" origin/main` |
 
 Run long installs and builds for all slices in the background. Start a slice's worker only after its setup exits 0.
 
 ## 3. Show it in Orca
+
+`<dir>` and `<main checkout>` are absolute paths everywhere below: a relative `path:` selector also returns `selector_not_found`.
 
 ```bash
 orca worktree show --worktree path:<dir>
