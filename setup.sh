@@ -3,17 +3,29 @@
 SKILLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET="$HOME/.claude/commands"
 
+mkdir -p "$TARGET"
+
+# If target is currently a symlink to this repo, replace it with a real directory
 if [ -L "$TARGET" ]; then
-  echo "Symlink already exists: $TARGET → $(readlink "$TARGET")"
-  exit 0
+  echo "Removing old symlink: $TARGET → $(readlink "$TARGET")"
+  rm "$TARGET"
+  mkdir -p "$TARGET"
 fi
 
-if [ -d "$TARGET" ]; then
-  echo "Warning: $TARGET already exists as a directory."
-  echo "Back it up or remove it, then re-run this script."
-  exit 1
-fi
+# Symlink each .md skill file into the commands directory
+for file in "$SKILLS_DIR"/*.md; do
+  [ -f "$file" ] || continue
+  name="$(basename "$file")"
+  # Skip non-skill files
+  [ "$name" = "README.md" ] && continue
 
-mkdir -p "$HOME/.claude"
-ln -s "$SKILLS_DIR" "$TARGET"
-echo "Linked $TARGET → $SKILLS_DIR"
+  dest="$TARGET/$name"
+  if [ -L "$dest" ]; then
+    echo "Already linked: $name"
+  elif [ -e "$dest" ]; then
+    echo "Skipped (file exists): $name"
+  else
+    ln -s "$file" "$dest"
+    echo "Linked: $name → $file"
+  fi
+done
